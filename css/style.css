@@ -1,0 +1,45 @@
+#main {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100%;
+}
+
+#map {
+    height: 100vh;
+    width: 80%;
+}
+
+#menu {
+    width: 20%;
+    background-color: whitesmoke;
+}
+
+.container {
+    display: flex;
+    margin-top: 100px;
+}
+
+.left {
+    flex: 1;
+    margin-left: 10px;
+}
+
+.right {
+    flex: 2;
+}
+
+#label2 {
+    margin-top: 100px;
+}
+
+#input2 {
+    margin-top: 75px;
+}
+
+#labelRes {
+    margin-bottom: 40px;
+}
+
+
+
