@@ -67,7 +67,65 @@ createMouseCoordinatesControl().addTo(map);
 
 
 
-
+// Исходные данные: массив объектов с информацией о картинках
+var imagesData = [
+    {
+      name: "Картинка 1",
+      previewUrl: "url/to/image1.jpg",
+      mapLocation: [51.505, -0.09], // Широта и долгота для отображения на карте
+      zoom: 13 // Уровень масштабирования для отображения на карте
+    },
+    {
+      name: "Картинка 2",
+      previewUrl: "url/to/image2.jpg",
+      mapLocation: [51.51, -0.1],
+      zoom: 14
+    },
+    // Добавьте другие объекты с информацией о картинках
+  ];
+  
+  // Функция для создания элемента списка
+  function createListItem(imageData) {
+    var listItem = document.createElement("li");
+    listItem.classList.add("list-item");
+  
+    var imagePreview = document.createElement("img");
+    imagePreview.src = imageData.previewUrl;
+    imagePreview.classList.add("image-preview");
+    listItem.appendChild(imagePreview);
+  
+    var imageName = document.createElement("div");
+    imageName.textContent = imageData.name;
+    imageName.classList.add("image-name");
+    listItem.appendChild(imageName);
+  
+    var showButton = document.createElement("button");
+    showButton.textContent = "Показать на карте";
+    showButton.classList.add("show-button");
+    listItem.appendChild(showButton);
+  
+    // Обработчик события для кнопки "Показать на карте"
+    showButton.addEventListener("click", function () {
+      // Ваш код для обработки нажатия на кнопку и отображения картинки на карте
+      // Используйте imageData.mapLocation и imageData.zoom для отображения на карте Leaflet
+      console.log("Кнопка для " + imageData.name + " была нажата.");
+    });
+  
+    return listItem;
+  }
+  
+  // Функция для создания списка из массива данных
+  function createList(imagesData) {
+    var list = document.getElementById("image-list");
+    imagesData.forEach(function (imageData) {
+      var listItem = createListItem(imageData);
+      list.appendChild(listItem);
+    });
+  }
+  
+  // Вызов функции для создания списка
+  createList(imagesData);
+  
 
 
 
