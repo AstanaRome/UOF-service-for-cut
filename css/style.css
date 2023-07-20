@@ -41,5 +41,20 @@
     margin-bottom: 40px;
 }
 
+.mouse-coordinates-control {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: white;
+    padding: 5px;
+  }
 
-
+  .transparent-control {
+    background: whitesmoke;
+    border: none;
+    box-shadow: none;
+    color: black; /* Цвет текста контрола */
+    font-family: Arial, sans-serif;
+    white-space: nowrap; /* Отключаем перенос текста на новую строку */
+    display: inline-block; /* Делаем контрол строчным элементом */
+  }

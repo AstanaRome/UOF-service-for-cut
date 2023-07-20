@@ -23,13 +23,168 @@ var previousValue;
 var newCoordBottomLeft;
 var newCoordTopLeft;
 var newCoordTopRight
+var layer;
 
-const map = L.map('map').setView([50, 70], 5);
+
+const map = L.map('map', {
+    maxBounds: [[-90, -180], [90, 180]], // Максимальные границы карты (весь мир)
+    maxZoom: 18, // Максимальный уровень увеличения
+    minZoom: 3 // Минимальный уровень увеличения
+  }).setView([50, 70], 3);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
+
+
+function createMouseCoordinatesControl() {
+    var control = L.control({ position: 'bottomleft' });
+
+    control.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'transparent-control mouse-coordinates-control');        
+      this._div.innerHTML = '';
+
+      // Обработчик события при перемещении указателя мыши
+      map.on('mousemove', function (e) {
+        var coordinates = e.latlng; // Координаты хранятся в объекте "latlng"
+        var lat = coordinates.lat.toFixed(5); // Округление широты до 5 знаков после запятой
+        var lng = coordinates.lng.toFixed(5); // Округление долготы до 5 знаков после запятой
+        control._div.innerHTML = 'lat: ' + lat + ', lng: ' + lng;
+      });
+
+      return this._div;
+    };
+
+    return control;
+  }
+
+
+
+createMouseCoordinatesControl().addTo(map);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const listItems = ['Пункт 1', 'Пункт 2', 'Пункт 3', 'Пункт 4', 'Пункт 5'];
+
+// Создание списка
+const listContainer = document.getElementById('list-container');
+const ul = document.createElement('ul');
+
+// Добавление пунктов списка
+listItems.forEach(itemText => {
+  const li = document.createElement('li');
+  li.textContent = itemText;
+  ul.appendChild(li);
+});
+
+// Добавление списка на страницу
+listContainer.appendChild(ul);
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    // Настройки для рисования полигонов (в данном случае - квадратов)
+    var drawOptions = {
+      draw: {
+        rectangle: {}, // Опции для квадрата (оставляем пустыми для включения)
+        polygon: false, // Отключаем рисование полигонов (и других фигур)
+        polyline: false, // Отключаем рисование линий
+        circle: false, // Отключаем рисование кругов
+        circlemarker: false, // Отключаем рисование маркеров-кругов
+        marker: false,
+
+        
+        // Задайте другие опции для рисования здесь
+      },
+      edit: false,
+      remove: false
+    };
+
+
+
+    var drawControl = new L.Control.Draw(drawOptions);
+    map.addControl(drawControl);
+
+    // Обработчик события при завершении рисования полигона
+    map.on('draw:created', function (e) {
+        if(layer != undefined){
+            removeEmptyLayer(layer)
+        }
+      layer = e.layer;      
+      drawnItems.addLayer(layer);
+
+      var rectangle = layer.toGeoJSON();
+      var coordinates = rectangle.geometry.coordinates[0]; // Координаты хранятся в свойстве "coordinates"
+
+      var north = coordinates[1][0];
+      var south = coordinates[1][0];
+      var east = coordinates[3][1];
+      var west = coordinates[3][0];
+      var path = "http://old-eo.gharysh.kz/CatalogService?DateFr=" + "2023-07-01" + "&DateTo=" + "2023-07-21" + "&West="+ west + "&East="+ east + "&South="+ south + "&North=" + north
+        fetch(path)
+            .then(function (response) {
+                return response.json()
+            })
+            .then(function (data) {
+            console.log(data);
+            
+            })
+    });
+
+
+
+
+
+
+
+
 
 
     buttonFind.onclick = function () {
@@ -42,7 +197,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         const day = inputValue.slice(15, 17);
         var date = year + "-" + month + "-" + day;
 
-        var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
+        var path = "http://old-eo.gharysh.kz/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
         fetch(path)
             .then(function (response) {
                 return response.json()
