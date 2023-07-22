@@ -4,28 +4,32 @@
     const tableContainer = document.querySelector('.table-container');
     tableContainer.innerHTML = ''
     data.forEach((item) => {
-      const columnDiv = document.createElement('div');
-      columnDiv.classList.add('column');
-  
-      const image = document.createElement('img');
-      image.src = item.Quicklook;
-      columnDiv.appendChild(image);
-  
-      const name = document.createElement('div');
-      name.classList.add('name');
-      name.textContent = item.Code;
-      columnDiv.appendChild(name);
-  
-      const button = document.createElement('div');
-      button.classList.add('button');
-      button.textContent = 'Показать'; // Замените текст на иконку
-      button.addEventListener('click', () => {
-        // Ваш код для отображения картинки по кнопке
-        console.log('Показать картинку:', item.imageSrc);
-      });
-      columnDiv.appendChild(button);
-  
-      tableContainer.appendChild(columnDiv);
+
+      if (item.Code.indexOf("DZHR") !== -1) {
+        const columnDiv = document.createElement('div');
+        columnDiv.classList.add('column');
+    
+        const image = document.createElement('img');
+        image.src = item.Quicklook;
+        columnDiv.appendChild(image);
+    
+        const name = document.createElement('div');
+        name.classList.add('name');
+        name.textContent = item.Code;
+        columnDiv.appendChild(name);
+    
+        const button = document.createElement('div');
+        button.classList.add('button');
+        button.textContent = 'Показать'; // Замените текст на иконку
+        button.addEventListener('click', () => {
+          inputId.value = name.textContent;
+          findImage()
+        });
+        columnDiv.appendChild(button);
+    
+        tableContainer.appendChild(columnDiv);
+      }    
+
     });
   }
 
@@ -72,9 +76,14 @@
     var west = coordinates[3][0];
     var east = coordinates[1][1];
     var south = coordinates[3][1];
-    console.log(coordinates)
+    const inputStartDate = document.getElementById('startDate').value;
+    const inputEndDate = document.getElementById('endDate').value;
+
+    console.log(inputStartDate);
+    console.log(inputEndDate);
+
     
-    var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + "2023-07-01" + "&DateTo=" + "2023-07-21" + "&West="+ west + "&East="+ east + "&South="+ south + "&North=" + north
+    var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + inputStartDate + "&DateTo=" + inputEndDate + "&West="+ west + "&East="+ east + "&South="+ south + "&North=" + north
       fetch(path)
           .then(function (response) {
               return response.json()

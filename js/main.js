@@ -25,6 +25,12 @@ var newCoordTopLeft;
 var newCoordTopRight
 var layer;
 
+
+const currentDate = new Date().toISOString().slice(0, 10);
+document.getElementById('startDate').value = currentDate;
+document.getElementById('endDate').value = currentDate;
+
+
 const map = L.map('map', {
     maxBounds: [[-90, -180], [90, 180]], // Максимальные границы карты (весь мир)
     maxZoom: 18, // Максимальный уровень увеличения
@@ -105,17 +111,8 @@ createMouseCoordinatesControl().addTo(map);
 
    
 
-
-
-
-
-
-
-
-
-
-    buttonFind.onclick = function () {
-        newCoordBottomLeft = undefined;        
+function findImage() {
+    newCoordBottomLeft = undefined;        
         newCoordTopLeft = undefined;
         newCoordTopRight = undefined;
         var inputValue = inputId.value;
@@ -150,9 +147,20 @@ createMouseCoordinatesControl().addTo(map);
                 setLines(imageUrl);
 
             })
+}
+
+
+
+
+
+
+
+
+    buttonFind.onclick = function () {
+       findImage();
     };
 
-
+    
 
 
 
