@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+
+  <title>Прокручивающаяся таблица</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <style>/* Стили для контейнера таблицы */
+        .table-container {
+          display: flex;
+          flex-direction: column;
+          max-height: 300px; /* Максимальная высота таблицы */
+          overflow-y: auto; /* Прокручивание при необходимости */
+        }
+        
+        /* Стили для элементов в каждой колонке */
+        .column {
+          display: flex;
+          align-items: center;
+          padding: 5px;
+        }
+        
+        .column img {
+          border-radius: 50%; /* Закругленные углы для превью-картинки */
+          width: 20%;
+        }
+        
+        .column .name {
+          width: 60%;
+          margin: 0 10px;
+        }
+        
+        .column .button {
+          width: 20%;
+          text-align: center;
+          cursor: pointer;
+        }
+        </style>
+
+
+
+  <div class="table-container">
+    <!-- Здесь будут добавляться элементы JavaScript -->
+  </div>
+
+  <script src="script.js"></script>
+
+  <script>
+// Данные для таблицы (вместо этого вы можете использовать данные из вашего источника)
+const data = [
+  {
+    imageSrc: 'image1.jpg',
+    name: 'Название картинки 1',
+  },
+  {
+    imageSrc: 'image2.jpg',
+    name: 'Название картинки 2',
+  },
+  {
+    imageSrc: 'image3.jpg',
+    name: 'Название картинки 3',
+  },
+  // Добавьте другие данные, как вам нужно
+];
+
+// Функция для создания элементов таблицы на основе данных
+function createTableItems() {
+  const tableContainer = document.querySelector('.table-container');
+
+  data.forEach((item) => {
+    const columnDiv = document.createElement('div');
+    columnDiv.classList.add('column');
+
+    const image = document.createElement('img');
+    image.src = item.imageSrc;
+    columnDiv.appendChild(image);
+
+    const name = document.createElement('div');
+    name.classList.add('name');
+    name.textContent = item.name;
+    columnDiv.appendChild(name);
+
+    const button = document.createElement('div');
+    button.classList.add('button');
+    button.textContent = 'Показать'; // Замените текст на иконку
+    button.addEventListener('click', () => {
+      // Ваш код для отображения картинки по кнопке
+      console.log('Показать картинку:', item.imageSrc);
+    });
+    columnDiv.appendChild(button);
+
+    tableContainer.appendChild(columnDiv);
+  });
+}
+
+// Вызов функции при загрузке страницы
+window.onload = createTableItems;
+
+
+  </script>
+</body>
+</html>

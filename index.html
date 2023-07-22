@@ -26,21 +26,23 @@
                     <div id="label4"> <label>Numbers of Line: </label></div>
                 </div>
                 <div class="right">
-                    <input type="text" id="input1">
-                    <button id="btnFind">Find</button>
-                    <button id="kmlButton">Upload KML</button>
-                    <input type="number" id="input2">
-                    <input type="number" id="input3">
-                    <div id="labelRes"> <label></label></div>
+                    <div id="right_one">
+                        <input type="text" id="input1">
+                        <button id="btnFind">Find</button>
+                        <button id="kmlButton">Upload KML</button>
+                    </div>
+                    <div id="right_two">
+                        <div><input type="number" id="input2"></div>
+                        <div><input type="number" id="input3"></div>                        
+                        <div id="labelRes"> <label></label></div>
+                    </div>
+                    
                     <button onclick="copyText()">Copy to buffer</button>
                 </div>
             </div>
-            <div class="list-container">
-                <ul id="image-list">
-                  <!-- Здесь будет динамически сгенерированный список -->
-                </ul>
+            <div class="table-container">
+                <!-- Здесь будут добавляться элементы JavaScript -->
               </div>
-        </div>
     </div>
 
 </body>
@@ -54,5 +56,6 @@
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 <script src="./js/main.js" type="text/javascript"></script>
 <script src="./js/functions.js" type="text/javascript"></script>
+<script src="./js/new_functions.js" type="text/javascript"></script>
 <script src="./js/L.KML.js"></script>
 
