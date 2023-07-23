@@ -1,3 +1,57 @@
+function createSlider() {
+    noUiSlider.create(slider, {
+        start: [1, maxLine],
+        connect: true,
+        step: 1,
+        orientation: 'vertical',
+        margin: 623,
+        range: {
+            'min': 1,
+            'max': maxLine
+        },
+        format: {
+            to: value => Math.round(value),
+            from: value => Math.round(value)
+        },
+        pips: {
+            mode: 'range',
+            density: 3,
+            format: {
+                to: value => Math.round(value),
+                from: value => Math.round(value)
+            }
+        }
+    });
+
+    // Обработчик события при изменении значения слайдера
+    slider.noUiSlider.on('update', function (values, handle) {
+        console.log("Ползунок " + handle + " перемещен на значение: " + values[handle]);
+        if (handle == 0){
+            inputFirstLine.value = values[handle];
+            firstLine(inputFirstLine.value)
+        }
+        else{
+            inputEndLine.value = values[handle]
+            endLine(inputEndLine.value)
+        }
+        //createFootprint();
+    });
+}
+
+
+
+function reinitializeSlider() {
+  
+    if (slider.innerHTML.trim() === '') {
+        createSlider();
+    } else{
+        slider.noUiSlider.destroy();
+        createSlider();
+    }
+    // Создаем слайдер с новыми настройками
+
+}
+
 
 
 function setLines(imageUrl) {
@@ -25,15 +79,17 @@ function setLines(imageUrl) {
                 }
 
             }
-            else { inputEndLine.value = temp
+            else {
+                inputEndLine.value = temp
                 maxLine = temp;
             }
             inputFirstLine.value = 1;
-            labelRes.textContent = maxLine.toString();
+            labelRes.textContent = "Numbers of lines: " + maxLine.toString();
             inputEndLine.max = maxLine;
             imageToKm = calculateDistance(numberArray[2], numberArray[3], numberArray[0], numberArray[1])
-            LineToKm = imageToKm/maxLine;
-            console.log(LineToKm);
+            LineToKm = imageToKm / maxLine;
+            reinitializeSlider()
+        
 
         })
         .catch(error => {
@@ -80,165 +136,7 @@ function calculateCoordinates(startLat, startLng, endLat, endLng, distance) {
 }
 
 
-L.ImageOverlay.Rotated = L.ImageOverlay.extend({
 
-    initialize: function (image, topleft, topright, bottomleft, options) {
-
-        if (typeof (image) === 'string') {
-            this._url = image;
-        } else {
-            // Assume that the first parameter is an instance of HTMLImage or HTMLCanvas
-            this._rawImage = image;
-        }
-
-        this._topLeft = L.latLng(topleft);
-        this._topRight = L.latLng(topright);
-        this._bottomLeft = L.latLng(bottomleft);
-
-        L.setOptions(this, options);
-    },
-
-
-    onAdd: function (map) {
-        if (!this._image) {
-            this._initImage();
-
-            if (this.options.opacity < 1) {
-                this._updateOpacity();
-            }
-        }
-
-        if (this.options.interactive) {
-            L.DomUtil.addClass(this._rawImage, 'leaflet-interactive');
-            this.addInteractiveTarget(this._rawImage);
-        }
-
-        map.on('zoomend resetview', this._reset, this);
-
-        this.getPane().appendChild(this._image);
-        this._reset();
-    },
-
-
-    onRemove: function (map) {
-        map.off('zoomend resetview', this._reset, this);
-        L.ImageOverlay.prototype.onRemove.call(this, map);
-    },
-
-
-    _initImage: function () {
-        var img = this._rawImage;
-        if (this._url) {
-            img = L.DomUtil.create('img');
-            img.style.display = 'none';	// Hide while the first transform (zero or one frames) is being done
-
-            if (this.options.crossOrigin) {
-                img.crossOrigin = '';
-            }
-
-            img.src = this._url;
-            this._rawImage = img;
-        }
-        L.DomUtil.addClass(img, 'leaflet-image-layer');
-
-        // this._image is reused by some of the methods of the parent class and
-        // must keep the name, even if it is counter-intuitive.
-        var div = this._image = L.DomUtil.create('div',
-            'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : ''));
-
-        this._updateZIndex(); // apply z-index style setting to the div (if defined)
-
-        div.appendChild(img);
-
-        div.onselectstart = L.Util.falseFn;
-        div.onmousemove = L.Util.falseFn;
-
-        img.onload = function () {
-            this._reset();
-            img.style.display = 'block';
-            this.fire('load');
-        }.bind(this);
-
-        img.alt = this.options.alt;
-    },
-
-
-    _reset: function () {
-        var div = this._image;
-
-        if (!this._map) {
-            return;
-        }
-
-        // Project control points to container-pixel coordinates
-        var pxTopLeft = this._map.latLngToLayerPoint(this._topLeft);
-        var pxTopRight = this._map.latLngToLayerPoint(this._topRight);
-        var pxBottomLeft = this._map.latLngToLayerPoint(this._bottomLeft);
-
-        // Infer coordinate of bottom right
-        var pxBottomRight = pxTopRight.subtract(pxTopLeft).add(pxBottomLeft);
-
-        // pxBounds is mostly for positioning the <div> container
-        var pxBounds = L.bounds([pxTopLeft, pxTopRight, pxBottomLeft, pxBottomRight]);
-        var size = pxBounds.getSize();
-        var pxTopLeftInDiv = pxTopLeft.subtract(pxBounds.min);
-
-        // LatLngBounds are needed for (zoom) animations
-        this._bounds = L.latLngBounds(this._map.layerPointToLatLng(pxBounds.min),
-            this._map.layerPointToLatLng(pxBounds.max));
-
-        L.DomUtil.setPosition(div, pxBounds.min);
-
-        div.style.width = size.x + 'px';
-        div.style.height = size.y + 'px';
-
-        var imgW = this._rawImage.width;
-        var imgH = this._rawImage.height;
-        if (!imgW || !imgH) {
-            return;	// Probably because the image hasn't loaded yet.
-        }
-
-        // Sides of the control-point box, in pixels
-        // These are the main ingredient for the transformation matrix.
-        var vectorX = pxTopRight.subtract(pxTopLeft);
-        var vectorY = pxBottomLeft.subtract(pxTopLeft);
-
-        this._rawImage.style.transformOrigin = '0 0';
-
-        // The transformation is an affine matrix that switches
-        // coordinates around in just the right way. This is the result
-        // of calculating the skew/rotation/scale matrices and simplyfing
-        // everything.
-        this._rawImage.style.transform = "matrix(" +
-            (vectorX.x / imgW) + ', ' + (vectorX.y / imgW) + ', ' +
-            (vectorY.x / imgH) + ', ' + (vectorY.y / imgH) + ', ' +
-            pxTopLeftInDiv.x + ', ' + pxTopLeftInDiv.y + ')';
-
-    },
-
-
-    reposition: function (topleft, topright, bottomleft) {
-        this._topLeft = L.latLng(topleft);
-        this._topRight = L.latLng(topright);
-        this._bottomLeft = L.latLng(bottomleft);
-        this._reset();
-    },
-
-
-    setUrl: function (url) {
-        this._url = url;
-        if (this._rawImage) {
-            this._rawImage.src = url;
-        }
-        return this;
-    }
-});
-
-
-
-L.imageOverlay.rotated = function (imgSrc, topleft, topright, bottomleft, options) {
-    return new L.ImageOverlay.Rotated(imgSrc, topleft, topright, bottomleft, options);
-};
 
 function getImageSize(url) {
     return new Promise((resolve, reject) => {
@@ -316,25 +214,25 @@ function copyText() {
 
     // Удаление временного элемента из DOM
     document.body.removeChild(tempInput);
+    const regex = /\d+/;
 
+    // Используем метод match() для поиска числа в строке
+    const matchResult = labelRes.textContent.match(regex);
     // Визуальная обратная связь
-    if(labelRes.textContent < 624){
+    if (matchResult[0] < 624) {
         alert('Количество линий не должно быть меньше 624!');
     }
-    
+
 }
 
 
-    
+
 
 
 function removeEmptyLayer(layer) {
     if (layer != undefined) {
         map.removeLayer(layer);
-        console.log("Слой удален");
-    } else {
-        console.log("Слой не пустой, не удален");
-    }
+    } 
 }
 
 

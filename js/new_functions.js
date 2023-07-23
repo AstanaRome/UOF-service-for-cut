@@ -79,11 +79,8 @@
     const inputStartDate = document.getElementById('startDate').value;
     const inputEndDate = document.getElementById('endDate').value;
 
-    console.log(inputStartDate);
-    console.log(inputEndDate);
-
     
-    var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + inputStartDate + "&DateTo=" + inputEndDate + "&West="+ west + "&East="+ east + "&South="+ south + "&North=" + north
+    var path = "http://old-eo.gharysh.kz/CatalogService?DateFr=" + inputStartDate + "&DateTo=" + inputEndDate + "&West="+ west + "&East="+ east + "&South="+ south + "&North=" + north
       fetch(path)
           .then(function (response) {
               return response.json()

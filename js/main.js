@@ -4,8 +4,10 @@ const kmlButton = document.getElementById('kmlButton');
 const buttonFind = document.getElementById('btnFind');
 const labelRes = document.getElementById('labelRes');
 const inputId = document.getElementById('input1');
+var slider = document.getElementById('slider');;
 
-var maxLine = 0;
+
+var maxLine = 100;
 var topleftQuicklook;
 var toprightQuicklook
 var bottomleftQuicklook;
@@ -26,8 +28,16 @@ var newCoordTopRight
 var layer;
 
 
+var sliderMin;
+var sliderMax;
+//var
+
+
+
+
 const currentDate = new Date().toISOString().slice(0, 10);
-document.getElementById('startDate').value = currentDate;
+
+document.getElementById('startDate').value = "2023-07-16";
 document.getElementById('endDate').value = currentDate;
 
 
@@ -43,9 +53,6 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
-
-
-  
 function createMouseCoordinatesControl() {
   var control = L.control({ position: 'bottomleft' });
 
@@ -100,9 +107,67 @@ createMouseCoordinatesControl().addTo(map);
 
 
 
+function endLine(enteredValue){
+    if (isNaN(enteredValue)) { // Проверяем, является ли введенное значение числом
+        // Если введенное значение не является числом, сбрасываем поле ввода
+        inputEndLine.value = '';
+    } else if (enteredValue < 1) {
+        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
+        inputEndLine.value = 1;
+    } else if (enteredValue > maxLine) {
+        inputEndLine.value = maxLine
+    }
+    var value = inputEndLine.value;
+    labelRes.textContent = "Numbers of lines: " + (inputEndLine.value - inputFirstLine.value + 1).toString();
+
+    var diffDistance = value * LineToKm;
+
+    newCoordBottomLeft = calculateCoordinates(topleftFootprint.lat, topleftFootprint.lng, bottomleftFootprint.lat, bottomleftFootprint.lng, diffDistance);
+
+
+    if (newCoordTopLeft == undefined) {
+        createFootprint(topleftFootprint, toprightFootprint, newCoordBottomLeft);
+    } else {
+        createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
+    }
+}
+
+function firstLine(enteredValue){
+    if (isNaN(enteredValue)) {
+        inputFirstLine.value = '';
+    } else if (enteredValue > maxLine) {
+        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
+        inputFirstLine.value = maxLine;
+    } else if (enteredValue < 1) {
+        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
+        inputFirstLine.value = 1;
+    }
+    else if (enteredValue > (inputEndLine.value - 623)) {
+        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
+        inputFirstLine.value = inputEndLine.value - 623;
+    }
+    var valueFirstLine = inputFirstLine.value;
+    labelRes.textContent = "Numbers of lines: " +  (inputEndLine.value - inputFirstLine.value + 1).toString();
 
 
 
+
+    var diffDistance = valueFirstLine * LineToKm;
+    newCoordTopLeft = calculateCoordinates(topleftFootprint.lat, topleftFootprint.lng, bottomleftFootprint.lat, bottomleftFootprint.lng, diffDistance);
+    newCoordTopRight = calculateCoordinates(toprightFootprint.lat, toprightFootprint.lng, bottomrightFootprint.lat, bottomrightFootprint.lng, diffDistance);
+
+
+
+
+
+
+
+    if (newCoordBottomLeft == undefined) {
+        createFootprint(newCoordTopLeft, newCoordTopRight, bottomleftFootprint);
+    } else {
+        createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
+    }
+}
 
 
 
@@ -121,7 +186,7 @@ function findImage() {
         const day = inputValue.slice(15, 17);
         var date = year + "-" + month + "-" + day;
 
-        var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
+        var path = "http://old-eo.gharysh.kz/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
         fetch(path)
             .then(function (response) {
                 return response.json()
@@ -144,9 +209,11 @@ function findImage() {
                 createQuicklook(imageUrl, topleftQuicklook, toprightQuicklook, bottomleftQuicklook);
                 createFootprint(topleftFootprint, toprightFootprint, bottomleftFootprint);
 
-                setLines(imageUrl);
+                setLines(imageUrl);  
+      
 
             })
+            
 }
 
 
@@ -158,6 +225,7 @@ function findImage() {
 
     buttonFind.onclick = function () {
        findImage();
+     
     };
 
     
@@ -166,77 +234,16 @@ function findImage() {
 
     inputEndLine.addEventListener('input', function () {
         var enteredValue = parseInt(inputEndLine.value); // Преобразуем введенное значение в число
-        console.log(enteredValue)
-        if (isNaN(enteredValue)) { // Проверяем, является ли введенное значение числом
-            // Если введенное значение не является числом, сбрасываем поле ввода
-            inputEndLine.value = '';
-        } else if (enteredValue < 1) {
-            // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-            inputEndLine.value = 1;
-        } else if (enteredValue > maxLine) {
-            inputEndLine.value = maxLine
-        }
-
-
-
-
-
-        var value = inputEndLine.value;
-
-
-        labelRes.textContent = (inputEndLine.value - inputFirstLine.value + 1).toString();
-
-        var diffDistance = value * LineToKm;
-
-        newCoordBottomLeft = calculateCoordinates(topleftFootprint.lat, topleftFootprint.lng, bottomleftFootprint.lat, bottomleftFootprint.lng, diffDistance);
-
-
-        if (newCoordTopLeft == undefined) {
-            createFootprint(topleftFootprint, toprightFootprint, newCoordBottomLeft);
-        } else {
-            createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
-        }
+        endLine(enteredValue)
 
     });
 
+
+
     inputFirstLine.addEventListener('input', function () {
         var enteredValue = parseInt(inputFirstLine.value); // Преобразуем введенное значение в число
-        console.log(enteredValue)
-        console.log(maxLine)
-        if (isNaN(enteredValue)) {
-            inputFirstLine.value = '';
-        } else if (enteredValue > maxLine) {
-            // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-            inputFirstLine.value = maxLine;
-        } else if (enteredValue < 1) {
-            // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-            inputFirstLine.value = 1;
-        }
-        else if (enteredValue > (inputEndLine.value - 623)) {
-            // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-            inputFirstLine.value = inputEndLine.value - 623;
-        }
-        var valueFirstLine = inputFirstLine.value;
-        labelRes.textContent = (inputEndLine.value - inputFirstLine.value + 1).toString();
-
-
-
-
-        var diffDistance = valueFirstLine * LineToKm;
-        newCoordTopLeft = calculateCoordinates(topleftFootprint.lat, topleftFootprint.lng, bottomleftFootprint.lat, bottomleftFootprint.lng, diffDistance);
-        newCoordTopRight = calculateCoordinates(toprightFootprint.lat, toprightFootprint.lng, bottomrightFootprint.lat, bottomrightFootprint.lng, diffDistance);
-
-
-
-
-
-
-
-        if (newCoordBottomLeft == undefined) {
-            createFootprint(newCoordTopLeft, newCoordTopRight, bottomleftFootprint);
-        } else {
-            createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
-        }
+        firstLine(enteredValue)
+        
     });
 
 
