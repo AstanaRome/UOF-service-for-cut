@@ -20,7 +20,8 @@
     
         const button = document.createElement('div');
         button.classList.add('button');
-        button.textContent = 'Показать'; // Замените текст на иконку
+        button.classList.add('fa', 'fa-solid', 'fa-eye');
+
         button.addEventListener('click', () => {
           inputId.value = name.textContent;
           findImage()

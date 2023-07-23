@@ -25,7 +25,6 @@ function createSlider() {
 
     // Обработчик события при изменении значения слайдера
     slider.noUiSlider.on('update', function (values, handle) {
-        console.log("Ползунок " + handle + " перемещен на значение: " + values[handle]);
         if (handle == 0){
             inputFirstLine.value = values[handle];
             firstLine(inputFirstLine.value)
@@ -185,7 +184,7 @@ function createQuicklook(imageUrl, topleft, topright, bottomleft) {
 
 function createFootprint(topleft, topright, bottomleft) {
     removeEmptyLayer(footprint)
-    footprint = L.imageOverlay.rotated("test.png", topleft, topright, bottomleft, {
+    footprint = L.imageOverlay.rotated("icon.svg", topleft, topright, bottomleft, {
         opacity: 1,
         interactive: true,
     }).addTo(map);
@@ -198,7 +197,7 @@ function copyText() {
 
     // Создание временного элемента input для копирования значения текста
     var tempInput = document.createElement('input');
-    tempInput.value = inputId.value + '\t' + inputFirstLine.value + '\t' + labelRes.textContent;
+    tempInput.value = inputId.value + '\t' + inputFirstLine.value + '\t' + labelRes.textContent.replace(/\D/g, '');
 
 
 
