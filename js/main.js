@@ -75,35 +75,6 @@ function createMouseCoordinatesControl() {
 }
 
 createMouseCoordinatesControl().addTo(map);
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
 
 
 
@@ -186,12 +157,20 @@ function findImage() {
         const day = inputValue.slice(15, 17);
         var date = year + "-" + month + "-" + day;
 
+        
+
         var path = "http://old-eo.gharysh.kz/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
         fetch(path)
             .then(function (response) {
                 return response.json()
             })
             .then(function (data) {
+                console.log(inputValue)
+                const latId = inputValue.substring(inputValue.indexOf("_E") + 2, inputValue.indexOf("N"));
+                const lngId = inputValue.substring(inputValue.indexOf("N") + 2, inputValue.indexOf("__"));
+               console.log(latId)
+               console.log(lngId)
+                // map.setView([latId, lngId], 3);
 
                 const codeToFind = inputValue;
                 const foundObject = data.data.find(obj => obj.Code === codeToFind);
