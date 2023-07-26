@@ -8,7 +8,19 @@
       if (item.Code.indexOf("DZHR") !== -1) {
         const columnDiv = document.createElement('div');
         columnDiv.classList.add('column');
-    
+        
+
+
+        const overlap = turf.booleanOverlap(item.Coordinates, kmlLayer);
+
+// Если overlap равно true, то слои пересекаются
+if (overlap) {
+  console.log("Слои пересекаются");
+} else {
+  console.log("Слои не пересекаются");
+}
+
+
         const image = document.createElement('img');
         image.src = item.Quicklook;
         columnDiv.appendChild(image);

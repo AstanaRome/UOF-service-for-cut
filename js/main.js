@@ -31,7 +31,7 @@ var layer;
 var sliderMin;
 var sliderMax;
 //var
-
+var kmlLayer;
 
 
 
@@ -252,7 +252,8 @@ function findImage() {
             const parser = new DOMParser();
             const kml = parser.parseFromString(kmlText, 'text/xml');
             // Создание слоя KML
-            const kmlLayer = new L.KML(kml);
+            kmlLayer = new L.KML(kml);
+            console.log(kmlLayer)
             kmlLayer.addTo(map);
         }
     })
