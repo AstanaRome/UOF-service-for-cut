@@ -6,7 +6,7 @@ const labelRes = document.getElementById('labelRes');
 const inputId = document.getElementById('input1');
 var slider = document.getElementById('slider');;
 
-
+var coordinatesArray = [];
 var maxLine = 100;
 var topleftQuicklook;
 var toprightQuicklook
@@ -75,123 +75,9 @@ function createMouseCoordinatesControl() {
 }
 
 createMouseCoordinatesControl().addTo(map);
-
-
-
-function endLine(enteredValue){
-    if (isNaN(enteredValue)) { // Проверяем, является ли введенное значение числом
-        // Если введенное значение не является числом, сбрасываем поле ввода
-        inputEndLine.value = '';
-    } else if (enteredValue < 1) {
-        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-        inputEndLine.value = 1;
-    } else if (enteredValue > maxLine) {
-        inputEndLine.value = maxLine
-    }
-    var value = inputEndLine.value;
-    labelRes.textContent = "Numbers of lines: " + (inputEndLine.value - inputFirstLine.value + 1).toString();
-
-    var diffDistance = value * LineToKm;
-
-    newCoordBottomLeft = calculateCoordinates(topleftFootprint.lat, topleftFootprint.lng, bottomleftFootprint.lat, bottomleftFootprint.lng, diffDistance);
-
-
-    if (newCoordTopLeft == undefined) {
-        createFootprint(topleftFootprint, toprightFootprint, newCoordBottomLeft);
-    } else {
-        createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
-    }
-}
-
-function firstLine(enteredValue){
-    if (isNaN(enteredValue)) {
-        inputFirstLine.value = '';
-    } else if (enteredValue > maxLine) {
-        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-        inputFirstLine.value = maxLine;
-    } else if (enteredValue < 1) {
-        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-        inputFirstLine.value = 1;
-    }
-    else if (enteredValue > (inputEndLine.value - 623)) {
-        // Если введенное значение превышает максимальное, устанавливаем максимальное значение
-        inputFirstLine.value = inputEndLine.value - 623;
-    }
-    var valueFirstLine = inputFirstLine.value;
-    labelRes.textContent = "Numbers of lines: " +  (inputEndLine.value - inputFirstLine.value + 1).toString();
-
-
-
-
-    var diffDistance = valueFirstLine * LineToKm;
-    newCoordTopLeft = calculateCoordinates(topleftFootprint.lat, topleftFootprint.lng, bottomleftFootprint.lat, bottomleftFootprint.lng, diffDistance);
-    newCoordTopRight = calculateCoordinates(toprightFootprint.lat, toprightFootprint.lng, bottomrightFootprint.lat, bottomrightFootprint.lng, diffDistance);
-
-
-
-
-
-
-
-    if (newCoordBottomLeft == undefined) {
-        createFootprint(newCoordTopLeft, newCoordTopRight, bottomleftFootprint);
-    } else {
-        createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
-    }
-}
-
-
-
-
-
-
    
 
-function findImage() {
-    newCoordBottomLeft = undefined;        
-        newCoordTopLeft = undefined;
-        newCoordTopRight = undefined;
-        var inputValue = inputId.value;
-        const year = inputValue.slice(9, 13);
-        const month = inputValue.slice(13, 15);
-        const day = inputValue.slice(15, 17);
-        var date = year + "-" + month + "-" + day;
 
-        
-
-        var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
-        fetch(path)
-            .then(function (response) {
-                return response.json()
-            })
-            .then(function (data) {
-                const latId = inputValue.substring(inputValue.indexOf("_E") + 2, inputValue.indexOf("N"));
-                const lngId = inputValue.substring(inputValue.indexOf("N") + 2, inputValue.indexOf("__"));
-          
-                // map.setView([latId, lngId], 3);
-
-                const codeToFind = inputValue;
-                const foundObject = data.data.find(obj => obj.Code === codeToFind);
-                var imageUrl = foundObject.Quicklook;
-                numberArray = foundObject.Coordinates.split(" ");
-                topleftQuicklook = L.latLng(numberArray[2], numberArray[3]), //L.latLng(51, 71.1945229029271), 
-                    toprightQuicklook = L.latLng(numberArray[4], numberArray[5]), //L.latLng(50.95, 71.48520586501472),
-                    bottomleftQuicklook = L.latLng(numberArray[0], numberArray[1]);
-
-                bottomrightFootprint = L.latLng(numberArray[6], numberArray[7]);
-                topleftFootprint = L.latLng(numberArray[2], numberArray[3]), //L.latLng(51, 71.1945229029271), 
-                    toprightFootprint = L.latLng(numberArray[4], numberArray[5]), //L.latLng(50.95, 71.48520586501472),
-                    bottomleftFootprint = L.latLng(numberArray[0], numberArray[1]);
-
-                createQuicklook(imageUrl, topleftQuicklook, toprightQuicklook, bottomleftQuicklook);
-                createFootprint(topleftFootprint, toprightFootprint, bottomleftFootprint);
-
-                setLines(imageUrl);  
-      
-
-            })
-            
-}
 
 
 
@@ -203,24 +89,18 @@ function findImage() {
     buttonFind.onclick = function () {
        findImage();
      
-    };
-
-    
+    };  
 
 
 
     inputEndLine.addEventListener('input', function () {
         var enteredValue = parseInt(inputEndLine.value); // Преобразуем введенное значение в число
         endLine(enteredValue)
-
     });
-
-
 
     inputFirstLine.addEventListener('input', function () {
         var enteredValue = parseInt(inputFirstLine.value); // Преобразуем введенное значение в число
-        firstLine(enteredValue)
-        
+        firstLine(enteredValue)        
     });
 
 
@@ -251,10 +131,33 @@ function findImage() {
         function loadAndAddKML(kmlText) {
             const parser = new DOMParser();
             const kml = parser.parseFromString(kmlText, 'text/xml');
+
+            getCoordFromKml(kml)
+
+
             // Создание слоя KML
             kmlLayer = new L.KML(kml);
-            console.log(kmlLayer)
             kmlLayer.addTo(map);
         }
     })
+
+
+
+    function getCoordFromKml(xmlDoc){
+        const polygons = xmlDoc.querySelectorAll('Polygon');
+                    
+
+                    for (let i = 0; i < polygons.length; i++) {
+                        const coordinates = polygons[i].querySelector('coordinates').textContent.trim();
+                        const coordPairs = coordinates.split(' ');
+
+                        const polygonCoordinates = [];
+
+                        for (let j = 0; j < coordPairs.length; j++) {
+                            const [longitude, latitude, altitude] = coordPairs[j].split(',');
+                            polygonCoordinates[j] = [longitude, latitude];
+                        }
+                        coordinatesArray[i] = polygonCoordinates;
+                    }
+    }
 

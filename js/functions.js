@@ -52,143 +52,162 @@ function reinitializeSlider() {
 }
 
 
+function createTableItems(data) {
+   
+    const tableContainer = document.querySelector('.table-container');
+    tableContainer.innerHTML = ''
+    data.forEach((item) => {
 
-function setLines(imageUrl) {
-    getImageSize(imageUrl)
-        .then(size => {
-            var temp = Math.round(size.height / (size.width / 125) * 5 - 5)
-            if (temp % 5 != 0) {
-                // if(temp % 5 >= 6){
-                //     this.allLine = temp - (temp % 5) + 10
-                // }
-                // else if (temp % 5 <= 4){
-                //   this.allLine = temp - (temp % 5) + 5
-                // }
-                if (temp % 5 >= 6) {
-                    inputEndLine.value = temp - (temp % 5) + 10
-                    maxLine = temp - (temp % 5) + 10
-                }
-                else if (temp % 5 < 6 && temp % 5 > 1) {
-                    inputEndLine.value = temp - (temp % 5) + 5
-                    maxLine = temp - (temp % 5) + 5
-                }
-                else {
-                    inputEndLine.value = (temp - temp % 5)
-                    maxLine = (temp - temp % 5);
-                }
+      if (item.Code.indexOf("DZHR") !== -1) {
 
-            }
-            else {
-                inputEndLine.value = temp
-                maxLine = temp;
-            }
-            inputFirstLine.value = 1;
-            labelRes.textContent = "Numbers of lines: " + maxLine.toString();
-            inputEndLine.max = maxLine;
-            imageToKm = calculateDistance(numberArray[2], numberArray[3], numberArray[0], numberArray[1])
-            LineToKm = imageToKm / maxLine;
-            reinitializeSlider()
+        const coordinatesArrayImage = item.Coordinates.split(' ').map(coord => parseFloat(coord));
+
+        // Делим массив на подмассивы, где каждый подмассив содержит широту и долготу
+        var latLngArray = [];
+        for (let i = 0; i < coordinatesArrayImage.length; i += 2) {
+            const latitude = coordinatesArrayImage[i];
+            const longitude = coordinatesArrayImage[i + 1];
+            latLngArray.push([longitude, latitude]);
+        }
+
+        latLngArray.push([coordinatesArrayImage[1], coordinatesArrayImage[0]]);
+
+       
+        console.log(latLngArray)
+
         
+        for (let j = 0; j < coordinatesArray.length; j++) {
+          
+            // const coordinatesAsNumbers = latLngArray.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+            // console.log(coordinatesAsNumbers)
+            
+            
+            const coordinatesAsNumbers = coordinatesArray[j].map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
 
-        })
-        .catch(error => {
-            console.error('Ошибка:', error.message);
+        // Проверяем, чтобы первая и последняя вершины совпадали
+        if (!coordinatesAsNumbers[0].every((val, index) => val === coordinatesAsNumbers[coordinatesAsNumbers.length - 1][index])) {
+            coordinatesAsNumbers.push(coordinatesAsNumbers[0]); // Добавляем первую вершину в конец для закрытия полигона
+        }
+            
+            
+        const coordinatesAsNumbers2 = latLngArray.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+
+        // Проверяем, чтобы первая и последняя вершины совпадали
+        if (!coordinatesAsNumbers2[0].every((val, index) => val === coordinatesAsNumbers2[coordinatesAsNumbers2.length - 1][index])) {
+            coordinatesAsNumbers2.push(coordinatesAsNumbers2[0]); // Добавляем первую вершину в конец для закрытия полигона
+        }
+            
+            
+            
+            
+            const polygon1 = turf.polygon(
+                [coordinatesAsNumbers]
+            );
+            // Геометрия второго полигона
+            const polygon2 = turf.polygon([coordinatesAsNumbers2]);
+
+          
+
+
+
+            const intersection = turf.intersect(polygon1, polygon2);
+
+            if (intersection) {
+                console.log("Полигоны пересекаются!");
+                console.log(intersection.geometry.coordinates);
+            } else {
+                console.log("Полигоны не пересекаются.");
+            }
+        }
+
+
+
+
+        const columnDiv = document.createElement('div');
+        columnDiv.classList.add('column');
+
+        const image = document.createElement('img');
+        image.src = item.Quicklook;
+        columnDiv.appendChild(image);
+    
+        const name = document.createElement('div');
+        name.classList.add('name');
+        name.textContent = item.Code;
+        columnDiv.appendChild(name);
+    
+        const button = document.createElement('div');
+        button.classList.add('button');
+        button.classList.add('fa', 'fa-solid', 'fa-eye');
+
+        button.addEventListener('click', () => {
+          inputId.value = name.textContent;
+          findImage()
         });
-};
+        columnDiv.appendChild(button);
+    
+        tableContainer.appendChild(columnDiv);
+      }    
 
-
-function calculateCoordinates(startLat, startLng, endLat, endLng, distance) {
-    // Преобразование градусов в радианы
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-
-    // Радиус Земли в километрах
-    const earthRadius = 6371;
-
-    // Преобразование координат в радианы
-    const lat1 = toRadians(startLat);
-    const lng1 = toRadians(startLng);
-    const lat2 = toRadians(endLat);
-    const lng2 = toRadians(endLng);
-
-    // Вычисление разницы координат
-    const dLat = lat2 - lat1;
-    const dLng = lng2 - lng1;
-
-    // Вычисление синуса половинного расстояния между точками
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-
-    // Вычисление угла между точками
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    // Вычисление расстояния между точками
-    const totalDistance = earthRadius * c;
-
-    // Вычисление доли пройденного расстояния
-    const fraction = distance / totalDistance;
-
-    // Вычисление промежуточных координат
-    const intermediateLat = startLat + (endLat - startLat) * fraction;
-    const intermediateLng = startLng + (endLng - startLng) * fraction;
-
-    // Возвращение промежуточных координат
-    return [intermediateLat, intermediateLng];
-}
-
-
-
-
-function getImageSize(url) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = function () {
-            const width = img.width;
-            const height = img.height;
-            resolve({ width, height });
-        };
-        img.onerror = function () {
-            reject(new Error('Не удалось загрузить изображение'));
-        };
-        img.src = url;
     });
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const earthRadius = 6371; // Радиус Земли в километрах
-
-    const dLat = toRadians(lat2 - lat1);
-    const dLon = toRadians(lon2 - lon1);
-
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const distance = earthRadius * c;
-    return distance;
-}
-
-function toRadians(degrees) {
-    return degrees * (Math.PI / 180);
-}
-
-function createQuicklook(imageUrl, topleft, topright, bottomleft) {
-    removeEmptyLayer(quicklook)
-    quicklook = L.imageOverlay.rotated(imageUrl, topleft, topright, bottomleft, {
-        opacity: 1,
-        interactive: true,
-    }).addTo(map);
-}
+  }
 
 
-function createFootprint(topleft, topright, bottomleft) {
-    removeEmptyLayer(footprint)
-    footprint = L.imageOverlay.rotated("icon.svg", topleft, topright, bottomleft, {
-        opacity: 1,
-        interactive: true,
-    }).addTo(map);
-}
+
+  var drawnItems = new L.FeatureGroup();
+  map.addLayer(drawnItems);
+
+  // Настройки для рисования полигонов (в данном случае - квадратов)
+  var drawOptions = {
+    draw: {
+      rectangle: {}, // Опции для квадрата (оставляем пустыми для включения)
+      polygon: false, // Отключаем рисование полигонов (и других фигур)
+      polyline: false, // Отключаем рисование линий
+      circle: false, // Отключаем рисование кругов
+      circlemarker: false, // Отключаем рисование маркеров-кругов
+      marker: false,
+
+      
+      // Задайте другие опции для рисования здесь
+    },
+    edit: false,
+    remove: false
+  };
+
+
+
+  var drawControl = new L.Control.Draw(drawOptions);
+  map.addControl(drawControl);
+
+  // Обработчик события при завершении рисования полигона
+  map.on('draw:created', function (e) {
+      if(layer != undefined){
+          removeEmptyLayer(layer)
+      }
+
+    layer = e.layer;      
+    drawnItems.addLayer(layer);
+    
+    var rectangle = layer.toGeoJSON();
+    var coordinates = rectangle.geometry.coordinates[0]; // Координаты хранятся в свойстве "coordinates"
+
+    var north = coordinates[1][0];
+    var west = coordinates[3][0];
+    var east = coordinates[1][1];
+    var south = coordinates[3][1];
+    const inputStartDate = document.getElementById('startDate').value;
+    const inputEndDate = document.getElementById('endDate').value;
+
+    
+    var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + inputStartDate + "&DateTo=" + inputEndDate + "&West="+ west + "&East="+ east + "&South="+ south + "&North=" + north
+      fetch(path)
+          .then(function (response) {
+              return response.json()
+          })
+          .then(function (data) {
+            createTableItems(data.data)
+          
+          })
+  });
 
 
 function copyText() {

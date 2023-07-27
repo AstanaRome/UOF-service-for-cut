@@ -1,26 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Красивая панель выбора периода даты</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Подключение стилей Bootstrap -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.0/nouislider.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.0/nouislider.min.js"></script>
-  
+    <title>Перевод координат в Turf.js полигон</title>
 </head>
 <body>
-  <div id="slider"></div>
+  <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script>
+        const coordinates = [
+            ['71.56275197431081', '51.06431865343208'],
+            ['71.3372279581629', '51.0482615644239'],
+            ['71.18889409025549', '50.97669248847108'],
+            ['71.5676539528462', '50.88578173787235'],
+            ['71.71799024747672', '50.98762097973943'],
+            ['71.87150262508715', '51.08916030840024'],
+            ['71.56275197431081', '51.06431865343208']
+        ];
 
+        // Преобразуем координаты в числа
+        const coordinatesAsNumbers = coordinates.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+
+        // Проверяем, чтобы первая и последняя вершины совпадали
+        if (!coordinatesAsNumbers[0].every((val, index) => val === coordinatesAsNumbers[coordinatesAsNumbers.length - 1][index])) {
+            coordinatesAsNumbers.push(coordinatesAsNumbers[0]); // Добавляем первую вершину в конец для закрытия полигона
+        }
+
+        // Создаем полигон с помощью Turf.js
+        const polygon1 = turf.polygon([coordinatesAsNumbers]);
+        const polygon2 = turf.polygon([coordinatesAsNumbers]);
+
+        const intersection = turf.intersect(polygon1, polygon2);
+
+
+        if (intersection) {
+                console.log("Полигоны пересекаются!");
+                console.log(intersection.geometry.coordinates);
+            } else {
+                console.log("Полигоны не пересекаются.");
+            }
+
+
+
+        // Выводим полигон в консоль
+        console.log(polygon);
+    </script>
 </body>
 </html>
-
-<style>
-
-div{
-  height: 200px;
-}
-
-
-
-</style>
