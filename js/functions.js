@@ -75,6 +75,7 @@ function createTableItems(data) {
        
         console.log(latLngArray)
 
+
         
         for (let j = 0; j < coordinatesArray.length; j++) {
           
@@ -115,6 +116,11 @@ function createTableItems(data) {
             if (intersection) {
                 console.log("Полигоны пересекаются!");
                 console.log(intersection.geometry.coordinates);
+                arrCoordRevers.push([latLngArray[0], latLngArray[3], latLngArray[2], latLngArray[1], latLngArray[4]])
+                arrCoord.push(latLngArray);
+                arrImages.push(item.Quicklook);
+                arrNames.push(item.Code);
+                
             } else {
                 console.log("Полигоны не пересекаются.");
             }
@@ -150,6 +156,7 @@ function createTableItems(data) {
 
     });
   }
+
 
 
 
@@ -208,6 +215,61 @@ function createTableItems(data) {
           
           })
   });
+
+
+
+
+function createKml(){
+    let kmlData = `<?xml version="1.0" encoding="UTF-8"?>
+        <kml xmlns="http://www.opengis.net/kml/2.2">
+            <Document>
+            <Folder>
+            <name>cover_images</name>
+            `;
+            for (let i = 0; i < arrCoordRevers.length; i++) {
+                const arrCoordReverse = arrCoordRevers[i];
+                const arrCoor = arrCoord[i];
+
+        kmlData += `
+        <Folder><name>${arrNames[i]}</name>
+            <Placemark>
+                <name>${arrNames[i]}</name>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                        <coordinates>
+                            ${arrCoor.map(coord => `${coord[0]},${coord[1]},0`).join('\n')}
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+            </Placemark>            
+                    <GroundOverlay>
+                    <name>${arrNames[i]}</name>
+                        <Icon>
+                            <href>${arrImages[i]}</href>
+                        </Icon>
+                        <gx:LatLonQuad xmlns:gx="http://www.google.com/kml/ext/2.2">
+                            <coordinates>
+                            ${arrCoordReverse.map(coord => `${coord[0]},${coord[1]},0`).join('\n')}
+                            </coordinates>
+                        </gx:LatLonQuad>
+                    </GroundOverlay>
+                    </Folder>
+                `;
+            }
+
+            kmlData += `
+            </Folder>
+                    </Document>
+                </kml>`;
+
+        // Создание и скачивание KML файла
+        const blob = new Blob([kmlData], { type: 'text/xml' });
+        saveAs(blob, 'cover.kml');
+}
+
+
 
 
 function copyText() {

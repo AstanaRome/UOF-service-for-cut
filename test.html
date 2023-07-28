@@ -1,47 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Перевод координат в Turf.js полигон</title>
+    <title>Создание KML файла с полигонами и растровыми изображениями</title>
 </head>
 <body>
-  <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0/umd/turf.min.js"></script>
     <script>
-        const coordinates = [
-            ['71.56275197431081', '51.06431865343208'],
-            ['71.3372279581629', '51.0482615644239'],
-            ['71.18889409025549', '50.97669248847108'],
-            ['71.5676539528462', '50.88578173787235'],
-            ['71.71799024747672', '50.98762097973943'],
-            ['71.87150262508715', '51.08916030840024'],
-            ['71.56275197431081', '51.06431865343208']
+        // Пример массива координат полигонов
+        const polygonsCoordinates = [
+            [
+                [0, 0],
+                [0, 10],
+                [10, 10],
+                [10, 0],
+                [0, 0]
+            ],
+            [
+                [5, 5],
+                [5, 15],
+                [15, 15],
+                [15, 5],
+                [5, 5]
+            ]
         ];
 
-        // Преобразуем координаты в числа
-        const coordinatesAsNumbers = coordinates.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+        // Пример массива ссылок на растровые изображения (абсолютные URL-адреса)
+        const imageUrls = [
+            'https://example.com/image1.jpg',
+            'https://example.com/image2.jpg'
+        ];
 
-        // Проверяем, чтобы первая и последняя вершины совпадали
-        if (!coordinatesAsNumbers[0].every((val, index) => val === coordinatesAsNumbers[coordinatesAsNumbers.length - 1][index])) {
-            coordinatesAsNumbers.push(coordinatesAsNumbers[0]); // Добавляем первую вершину в конец для закрытия полигона
-        }
+        // Создание KML данных с помощью Turf.js
+        let kmlData = `<?xml version="1.0" encoding="UTF-8"?>
+        <kml xmlns="http://www.opengis.net/kml/2.2">
+            <Document>`;
 
-        // Создаем полигон с помощью Turf.js
-        const polygon1 = turf.polygon([coordinatesAsNumbers]);
-        const polygon2 = turf.polygon([coordinatesAsNumbers]);
+        kmlData += polygonsCoordinates.map((polygon, index) => `
+            <Placemark>
+                <name>Polygon ${index + 1}</name>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            ${polygon.map(coord => `${coord[0]},${coord[1]},0`).join('\n')}
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <GroundOverlay>
+                    <Icon>
+                        <href>${imageUrls[index]}</href>
+                    </Icon>
+                    <LatLonBox>
+                        <north>${Math.max(...polygon.map(coord => coord[1]))}</north>
+                        <south>${Math.min(...polygon.map(coord => coord[1]))}</south>
+                        <east>${Math.max(...polygon.map(coord => coord[0]))}</east>
+                        <west>${Math.min(...polygon.map(coord => coord[0]))}</west>
+                    </LatLonBox>
+                </GroundOverlay>
+            </Placemark>
+        `).join('\n');
 
-        const intersection = turf.intersect(polygon1, polygon2);
+        kmlData += `
+            </Document>
+        </kml>`;
 
-
-        if (intersection) {
-                console.log("Полигоны пересекаются!");
-                console.log(intersection.geometry.coordinates);
-            } else {
-                console.log("Полигоны не пересекаются.");
-            }
-
-
-
-        // Выводим полигон в консоль
-        console.log(polygon);
+        // Создание KML файла и открытие его в новом окне
+        const blob = new Blob([kmlData], { type: 'text/xml' });
+        const kmlUrl = URL.createObjectURL(blob);
+        window.open(kmlUrl);
     </script>
 </body>
 </html>

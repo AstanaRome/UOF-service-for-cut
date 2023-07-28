@@ -33,11 +33,15 @@ var sliderMax;
 //var
 var kmlLayer;
 
+var arrCoord = [];
+var arrCoordRevers = [];
+var arrImages = [];
+var arrNames = [];
 
 
 const currentDate = new Date().toISOString().slice(0, 10);
 
-document.getElementById('startDate').value = "2023-07-16";
+document.getElementById('startDate').value = "2023-07-01";
 document.getElementById('endDate').value = currentDate;
 
 
@@ -134,7 +138,7 @@ createMouseCoordinatesControl().addTo(map);
 
             getCoordFromKml(kml)
 
-
+            removeEmptyLayer(kmlLayer)
             // Создание слоя KML
             kmlLayer = new L.KML(kml);
             kmlLayer.addTo(map);
