@@ -34,6 +34,9 @@ function findImage() {
                     toprightFootprint = L.latLng(numberArray[4], numberArray[5]), //L.latLng(50.95, 71.48520586501472),
                     bottomleftFootprint = L.latLng(numberArray[0], numberArray[1]);
 
+
+                    map.setView(topleftQuicklook, 7);
+
                 createQuicklook(imageUrl, topleftQuicklook, toprightQuicklook, bottomleftQuicklook);
                 createFootprint(topleftFootprint, toprightFootprint, bottomleftFootprint);
 

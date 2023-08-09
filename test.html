@@ -1,72 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Создание KML файла с полигонами и растровыми изображениями</title>
+    <title>Круглый виджет загрузки</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <script src="https://unpkg.com/@turf/turf@6.5.0/umd/turf.min.js"></script>
-    <script>
-        // Пример массива координат полигонов
-        const polygonsCoordinates = [
-            [
-                [0, 0],
-                [0, 10],
-                [10, 10],
-                [10, 0],
-                [0, 0]
-            ],
-            [
-                [5, 5],
-                [5, 15],
-                [15, 15],
-                [15, 5],
-                [5, 5]
-            ]
-        ];
-
-        // Пример массива ссылок на растровые изображения (абсолютные URL-адреса)
-        const imageUrls = [
-            'https://example.com/image1.jpg',
-            'https://example.com/image2.jpg'
-        ];
-
-        // Создание KML данных с помощью Turf.js
-        let kmlData = `<?xml version="1.0" encoding="UTF-8"?>
-        <kml xmlns="http://www.opengis.net/kml/2.2">
-            <Document>`;
-
-        kmlData += polygonsCoordinates.map((polygon, index) => `
-            <Placemark>
-                <name>Polygon ${index + 1}</name>
-                <Polygon>
-                    <outerBoundaryIs>
-                        <LinearRing>
-                            ${polygon.map(coord => `${coord[0]},${coord[1]},0`).join('\n')}
-                        </LinearRing>
-                    </outerBoundaryIs>
-                </Polygon>
-                <GroundOverlay>
-                    <Icon>
-                        <href>${imageUrls[index]}</href>
-                    </Icon>
-                    <LatLonBox>
-                        <north>${Math.max(...polygon.map(coord => coord[1]))}</north>
-                        <south>${Math.min(...polygon.map(coord => coord[1]))}</south>
-                        <east>${Math.max(...polygon.map(coord => coord[0]))}</east>
-                        <west>${Math.min(...polygon.map(coord => coord[0]))}</west>
-                    </LatLonBox>
-                </GroundOverlay>
-            </Placemark>
-        `).join('\n');
-
-        kmlData += `
-            </Document>
-        </kml>`;
-
-        // Создание KML файла и открытие его в новом окне
-        const blob = new Blob([kmlData], { type: 'text/xml' });
-        const kmlUrl = URL.createObjectURL(blob);
-        window.open(kmlUrl);
-    </script>
+    <div class="loader"></div>
 </body>
+<script src="script.js"></script>
 </html>
+
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+.loader {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+</style>
+
+
+<script>
+function simulateLongRunningTask() {
+    return new Promise(resolve => {
+        setTimeout(resolve, 5000);
+    });
+}
+
+function hideLoader() {
+    const loader = document.querySelector('.loader');
+    loader.style.display = 'none';
+}
+
+async function main() {
+    try {
+        // Показываем круглый виджет загрузки
+        const loader = document.querySelector('.loader');
+        loader.style.display = 'block';
+
+        // Выполняем длительную операцию (имитация с помощью задержки)
+        await simulateLongRunningTask();
+
+        // Скрываем виджет загрузки после выполнения операции
+        hideLoader();
+    } catch (error) {
+        console.error('Произошла ошибка:', error);
+        hideLoader();
+    }
+}
+
+// Вызываем основную функцию при загрузке страницы
+main();
+
+
+
+
+</script>
+
+// Здесь можно добавить любую логику для выполнения операции
+// В данном примере, просто добавим задержку на 5 секунд для имитации длительной операции
+
+
+

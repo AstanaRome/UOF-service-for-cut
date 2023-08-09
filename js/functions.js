@@ -58,7 +58,7 @@ function createTableItems(data) {
     tableContainer.innerHTML = ''
     data.forEach((item) => {
 
-      if (item.Code.indexOf("DZHR") !== -1) {
+      if (item.Code.indexOf("DZHR") !== -1 && item.IncidenceAngle <= angleInput.value) {
 
         const coordinatesArrayImage = item.Coordinates.split(' ').map(coord => parseFloat(coord));
 
@@ -71,9 +71,6 @@ function createTableItems(data) {
         }
 
         latLngArray.push([coordinatesArrayImage[1], coordinatesArrayImage[0]]);
-
-       
-        console.log(latLngArray)
 
 
         

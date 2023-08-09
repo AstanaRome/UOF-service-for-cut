@@ -140,5 +140,14 @@ img{
   width: 152px;
 }
 
+#lbAngle{
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+#angleInput{
+  width: 70px;
+}
 
 

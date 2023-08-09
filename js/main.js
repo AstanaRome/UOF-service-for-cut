@@ -4,6 +4,8 @@ const kmlButton = document.getElementById('kmlButton');
 const buttonFind = document.getElementById('btnFind');
 const labelRes = document.getElementById('labelRes');
 const inputId = document.getElementById('input1');
+const angleInput = document.getElementById('angleInput');
+
 var slider = document.getElementById('slider');;
 
 var coordinatesArray = [];
@@ -79,12 +81,6 @@ function createMouseCoordinatesControl() {
 }
 
 createMouseCoordinatesControl().addTo(map);
-   
-
-
-
-
-
 
 
 
@@ -113,50 +109,89 @@ createMouseCoordinatesControl().addTo(map);
     kmlButton.addEventListener('click', function () {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
-
+    
         // Обработчик события выбора файла
         fileInput.addEventListener('change', function (event) {
             const file = event.target.files[0];
-
-            // Чтение содержимого файла
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const kmlText = e.target.result;
-                // Загрузка и добавление KML на карту Leaflet
-                loadAndAddKML(kmlText);
-            };
-            reader.readAsText(file);
+            
+            if (file.name.endsWith('.kml')) {
+                // Если выбран KML файл
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const kmlText = e.target.result;
+                    // Загрузка и добавление KML на карту Leaflet
+                    loadAndAddKML(kmlText);
+                };
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.kmz')) {
+                // Если выбран KMZ файл
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const kmzData = e.target.result;
+                    // Работа с KMZ данными
+                    handleKMZData(kmzData);
+                };
+                reader.readAsArrayBuffer(file);
+            }
         });
-
+    
         // Нажатие на элемент input типа "file"
         fileInput.click();
-
+    
         // Функция загрузки и добавления KML на карту Leaflet
         function loadAndAddKML(kmlText) {
             const parser = new DOMParser();
             const kml = parser.parseFromString(kmlText, 'text/xml');
-
-            getCoordFromKml(kml)
-
-            removeEmptyLayer(kmlLayer)
+            
+            getCoordFromKml(kml);
+            
+            removeEmptyLayer(kmlLayer);
             // Создание слоя KML
             kmlLayer = new L.KML(kml);
+            map.setView(kmlLayer.getBounds().getNorthWest(), 7);
+            kmlLayer.setStyle({ color: 'blue', fillColor: 'blue' });
             kmlLayer.addTo(map);
         }
-    })
+    
+        // Функция обработки данных KMZ
+        function handleKMZData(kmzData) {
+            // Создание экземпляра JSZip и загрузка KMZ данных
+            const zip = new JSZip();
+            zip.loadAsync(kmzData).then(function (zip) {
+                // Найдите KML файл в архиве KMZ
+                const kmlFile = zip.file(/.*\.kml$/i)[0];
+                if (kmlFile) {
+                    return kmlFile.async('string');
+                } else {
+                    throw new Error("KML file not found in KMZ archive.");
+                }
+            }).then(function (kmlContent) {
+                // Преобразуйте XML KML в объект и добавьте на карту
+                const parser = new DOMParser();
+                const kml = parser.parseFromString(kmlContent, 'text/xml');
+                
+                getCoordFromKml(kml);
+                
+                removeEmptyLayer(kmlLayer);
+                // Создание слоя KML
+                kmlLayer = new L.KML(kml);
+                map.setView(kmlLayer.getBounds().getNorthWest(), 7);
+                kmlLayer.setStyle({ color: 'blue', fillColor: 'blue' });
+                kmlLayer.addTo(map);
+            }).catch(function (error) {
+                console.error(error);
+            });
+        }
+    });
 
 
 
     function getCoordFromKml(xmlDoc){
         const polygons = xmlDoc.querySelectorAll('Polygon');
-                    
-
                     for (let i = 0; i < polygons.length; i++) {
                         const coordinates = polygons[i].querySelector('coordinates').textContent.trim();
                         const coordPairs = coordinates.split(' ');
-
                         const polygonCoordinates = [];
-
                         for (let j = 0; j < coordPairs.length; j++) {
                             const [longitude, latitude, altitude] = coordPairs[j].split(',');
                             polygonCoordinates[j] = [longitude, latitude];
