@@ -29,6 +29,7 @@ var newCoordTopLeft;
 var newCoordTopRight
 var layer;
 
+var lastActiveButton = null;
 
 var sliderMin;
 var sliderMax;
@@ -41,10 +42,20 @@ var arrImages = [];
 var arrNames = [];
 
 
-const currentDate = new Date().toISOString().slice(0, 10);
+// Получение текущей даты
+const currentDate = new Date();
 
-document.getElementById('startDate').value = "2023-07-01";
-document.getElementById('endDate').value = currentDate;
+// Получение даты на неделю раньше
+const weekEarlier = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+// Преобразование даты в строку формата YYYY-MM-DD
+const weekEarlierStr = weekEarlier.toISOString().slice(0, 10);
+const currentDateStr = currentDate.toISOString().slice(0, 10);
+
+// Установка значений для полей ввода
+document.getElementById('startDate').value = weekEarlierStr;
+document.getElementById('endDate').value = currentDateStr;
+
 
 
 const map = L.map('map', {
@@ -53,10 +64,16 @@ const map = L.map('map', {
     minZoom: 3 // Минимальный уровень увеличения
   }).setView([50, 70], 3);
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors, © CARTO',
     maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    subdomains: 'abcd'
 }).addTo(map);
+
+
+
+
+var footprintlayerGroup = L.layerGroup().addTo(map);
 
 
 function createMouseCoordinatesControl() {
@@ -200,3 +217,64 @@ createMouseCoordinatesControl().addTo(map);
                     }
     }
 
+    L.Control.KazEOSat1 = L.Control.extend({
+        onAdd: function(map) {
+            var container = L.DomUtil.create('div');
+            var button = L.DomUtil.create('button', '', container);
+            button.innerHTML = 'KazEOSat-1';
+            // Стилизация кнопки
+            button.style.backgroundColor = 'green';
+            button.style.color = 'white';
+            button.style.padding = '5px';
+            button.style.border = 'none';
+            button.style.borderRadius = '4px';
+            button.style.cursor = 'pointer';
+    
+            button.onclick = function() {
+                // Проверка, был ли слой уже загружен
+                if (window.kmlLayer) {
+                    // Если слой уже загружен, удаляем его
+                    map.removeLayer(window.kmlLayer);
+                    window.kmlLayer = null; // Сброс ссылки на слой
+                    button.style.backgroundColor = 'green'; // Изменение цвета кнопки обратно на зелёный
+                } else {
+                    // Загрузка и добавление KML-слоя на карту
+                    var kmlPath = 'KazEOSat-1.kml';
+                    fetch(kmlPath).then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    }).then(kmlContent => {
+                        window.kmlLayer = omnivore.kml.parse(kmlContent)
+                            .on('ready', function() {
+                                map.fitBounds(window.kmlLayer.getBounds());
+                                button.style.backgroundColor = 'red'; // Изменение цвета кнопки на красный
+                            })
+                            .addTo(map);
+                    }).catch(error => {
+                        console.error('Ошибка при загрузке KML-файла:', error);
+                    });
+                }
+            };
+    
+            return container;
+        },
+    
+        onRemove: function(map) {
+            // Удаление слоя при удалении элемента управления, если он был добавлен
+            if (window.kmlLayer) {
+                map.removeLayer(window.kmlLayer);
+                window.kmlLayer = null;
+            }
+        }
+    });
+    
+    L.control.kazEOSat1 = function(opts) {
+        return new L.Control.KazEOSat1(opts);
+    }
+    
+    // Добавление пользовательского элемента управления на карту
+    L.control.kazEOSat1({ position: 'topright' }).addTo(map);
+    
+    

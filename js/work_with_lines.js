@@ -1,14 +1,21 @@
-function findImage() {
+function findImage(name) {
     newCoordBottomLeft = undefined;        
         newCoordTopLeft = undefined;
         newCoordTopRight = undefined;
-        var inputValue = inputId.value;
+        var inputValue 
+        if (name != undefined){
+            inputId.value = name
+            inputValue = name
+        } else{
+            inputValue = inputId.value;
+        }
+        
         const year = inputValue.slice(9, 13);
         const month = inputValue.slice(13, 15);
         const day = inputValue.slice(15, 17);
         var date = year + "-" + month + "-" + day;
 
-        
+        removeEmptyLayer(footprint)
 
         var path = "http://10.0.6.117:8001/CatalogService?DateFr=" + date + "&DateTo=" + date + "&West=179.356737&East=79.563306&South=-37.146315&North=-179.766815"
         fetch(path)
@@ -22,7 +29,7 @@ function findImage() {
                 // map.setView([latId, lngId], 3);
 
                 const codeToFind = inputValue;
-                const foundObject = data.data.find(obj => obj.Code === codeToFind);
+                const foundObject = data.data.find(obj => obj.Code === codeToFind);          
                 var imageUrl = foundObject.Quicklook;
                 numberArray = foundObject.Coordinates.split(" ");
                 topleftQuicklook = L.latLng(numberArray[2], numberArray[3]), //L.latLng(51, 71.1945229029271), 
@@ -34,9 +41,9 @@ function findImage() {
                     toprightFootprint = L.latLng(numberArray[4], numberArray[5]), //L.latLng(50.95, 71.48520586501472),
                     bottomleftFootprint = L.latLng(numberArray[0], numberArray[1]);
 
-
-                    map.setView(topleftQuicklook, 7);
-
+                    var currentZoom = map.getZoom();
+                    map.setView(topleftQuicklook, currentZoom);
+                    
                 createQuicklook(imageUrl, topleftQuicklook, toprightQuicklook, bottomleftQuicklook);
                 createFootprint(topleftFootprint, toprightFootprint, bottomleftFootprint);
 
@@ -70,6 +77,7 @@ function endLine(enteredValue){
     if (newCoordTopLeft == undefined) {
         createFootprint(topleftFootprint, toprightFootprint, newCoordBottomLeft);
     } else {
+        removeEmptyLayer(footprint)
         createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
     }
 }
@@ -107,6 +115,7 @@ function firstLine(enteredValue){
     if (newCoordBottomLeft == undefined) {
         createFootprint(newCoordTopLeft, newCoordTopRight, bottomleftFootprint);
     } else {
+        removeEmptyLayer(footprint)
         createFootprint(newCoordTopLeft, newCoordTopRight, newCoordBottomLeft);
     }
 }
@@ -238,13 +247,50 @@ function createQuicklook(imageUrl, topleft, topright, bottomleft) {
         opacity: 1,
         interactive: true,
     }).addTo(map);
+    quicklook.setZIndex(1000);
 }
-
-
 function createFootprint(topleft, topright, bottomleft) {
     removeEmptyLayer(footprint)
     footprint = L.imageOverlay.rotated("icon.svg", topleft, topright, bottomleft, {
         opacity: 1,
         interactive: true,
     }).addTo(map);
+    footprint.setZIndex(1000);
+}
+
+function createFootprintGroup(topleft, topright, bottomleft, name) {  
+      
+    
+    footprintGroup = L.imageOverlay.rotated("icon.svg", topleft, topright, bottomleft, {
+        opacity: 1,
+        interactive: true,
+    })//.bindPopup(name)
+    footprintGroup.popupContent = name;
+
+   
+
+    footprintlayerGroup.addLayer(footprintGroup);
+
+
+    
+   
+
+
+    footprintGroup.on('click', function(e) {
+       // inputId.value = name;
+       // findImage();
+       
+        // В этом месте вы можете выполнить любые действия для отображения информации о слое
+        // Например, отобразить всплывающее окно (popup) с информацией
+        var popup = L.popup()
+            .setLatLng(e.latlng) // Устанавливаем положение всплывающего окна там, где был сделан клик
+            .setContent(name) // Здесь должна быть ваша информация о слое
+            .openOn(map);
+            var content = popup.getContent();
+            findImage(content);
+    });
+
+    
+ 
+    footprintGroup.setZIndex(1000);
 }

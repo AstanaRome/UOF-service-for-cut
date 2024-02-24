@@ -56,11 +56,20 @@ function createTableItems(data) {
    
     const tableContainer = document.querySelector('.table-container');
     tableContainer.innerHTML = ''
+
     data.forEach((item) => {
 
       if (item.Code.indexOf("DZHR") !== -1 && item.IncidenceAngle <= angleInput.value) {
 
         const coordinatesArrayImage = item.Coordinates.split(' ').map(coord => parseFloat(coord));
+        
+        
+        numberArray = item.Coordinates.split(" ");
+        bottomrightFootprint = L.latLng(numberArray[6], numberArray[7]);
+        topleftFootprint = L.latLng(numberArray[2], numberArray[3]), //L.latLng(51, 71.1945229029271), 
+            toprightFootprint = L.latLng(numberArray[4], numberArray[5]), //L.latLng(50.95, 71.48520586501472),
+            bottomleftFootprint = L.latLng(numberArray[0], numberArray[1]);
+            createFootprintGroup(topleftFootprint, toprightFootprint, bottomleftFootprint, item.Code);
 
         // Делим массив на подмассивы, где каждый подмассив содержит широту и долготу
         var latLngArray = [];
@@ -129,6 +138,32 @@ function createTableItems(data) {
         const columnDiv = document.createElement('div');
         columnDiv.classList.add('column');
 
+
+        columnDiv.addEventListener('mouseover', function() {
+            // Действие при наведении курсора, например, изменение фонового цвета
+            this.style.backgroundColor = "#A9A9A9"; // Светло-серый фон
+        });
+    
+        // Добавление события ухода курсора с columnDiv
+        columnDiv.addEventListener('mouseout', function() {
+            // Возврат к исходному стилю при уходе курсора
+            this.style.backgroundColor = ""; // Удаление индивидуального стиля фона
+        });
+    
+
+        // Добавление события клика по columnDiv
+        columnDiv.addEventListener('click', function() {
+        // Действие при клике, например, вывод сообщения в консоль
+        console.log("Клик по строке с кодом: " + item.Code);
+        // Здесь может быть любая другая логика, например, открытие модального окна или переход на другую страницу
+    });
+
+
+
+
+
+
+
         const image = document.createElement('img');
         image.src = item.Quicklook;
         columnDiv.appendChild(image);
@@ -138,14 +173,39 @@ function createTableItems(data) {
         name.textContent = item.Code;
         columnDiv.appendChild(name);
     
+        const button_gps = document.createElement('div');
+        button_gps.classList.add('button');
+        button_gps.classList.add('fa', 'fa-solid', 'fa-location-crosshairs');
+        button_gps.addEventListener('click', () => {
+            
+
+
+
+            
+          });
+        columnDiv.appendChild(button_gps);
+
+
         const button = document.createElement('div');
         button.classList.add('button');
-        button.classList.add('fa', 'fa-solid', 'fa-eye');
+        button.classList.add('fa', 'fa-regular', 'fa-eye');
 
         button.addEventListener('click', () => {
           inputId.value = name.textContent;
           findImage()
+          if (lastActiveButton) {
+            // Удаляем класс подсветки с предыдущей активной кнопки
+            lastActiveButton.classList.remove('fa', 'fa-solid', 'fa-eye');
+            lastActiveButton.classList.add('fa', 'fa-regular', 'fa-eye');
+        }
+        
+        // Добавляем класс подсветки текущей нажатой кнопке
+        button.classList.add('fa', 'fa-solid', 'fa-eye');
+        
+        // Сохраняем ссылку на текущую нажатую кнопку как последнюю активную
+        lastActiveButton = button;
         });
+        
         columnDiv.appendChild(button);
     
         tableContainer.appendChild(columnDiv);
@@ -208,7 +268,17 @@ function createTableItems(data) {
               return response.json()
           })
           .then(function (data) {
+            footprintlayerGroup.clearLayers();
+            // footprintlayerGroup.eachLayer(function(layer) {
+            //     layer.on('mouseover', function() {
+            //         layer.openPopup();
+            //     });
+            //     layer.on('mouseout', function() {
+            //         layer.closePopup();
+            //     });
+            // });
             createTableItems(data.data)
+
           
           })
   });
@@ -217,6 +287,7 @@ function createTableItems(data) {
 
 
 function createKml(){
+    
     let kmlData = `<?xml version="1.0" encoding="UTF-8"?>
         <kml xmlns="http://www.opengis.net/kml/2.2">
             <Document>
@@ -264,6 +335,10 @@ function createKml(){
         // Создание и скачивание KML файла
         const blob = new Blob([kmlData], { type: 'text/xml' });
         saveAs(blob, 'cover.kml');
+        arrCoordRevers = [];
+    arrCoord = [];
+    arrNames = [];
+    arrImages = [];
 }
 
 
